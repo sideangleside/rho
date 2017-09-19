@@ -147,35 +147,44 @@ def process_jboss_versions(host_vars):
     running_ver = 'jboss.running-versions'
 
     lines = []
+    jboss_release_paths = []
+    jboss_release_dates = []
+    jboss_release_versions = []
     val = {}
 
     # host_vars is not used after this function (data that we return
     # is copied to host_vals instead), so by not returning
     # jboss.jar_ver and jboss.run_jar_ver, we are implicitly removing
     # them from the output.
-    if 'jboss.jar-ver' in host_vars:
-        lines.extend(host_vars['jboss.jar-ver']['stdout_lines'])
-    if 'jboss.run-jar-ver' in host_vars:
-        lines.extend(host_vars['jboss.run-jar-ver']['stdout_lines'])
+    if 'Gather jboss-modules.jar paths' in host_vars:
+        jboss_release_paths.extend(host_vars['jboss.jar-path']['stdout_lines'])
+    if 'Gather jboss-modules.jar dates' in host_vars:
+        jboss_release_dates.extend(host_vars['jboss.jar-date']['stdout_lines'])
+    if 'Gather jboss-modules.jar versions' in host_vars:
+        jboss_release_versions.extend(host_vars['jboss.jar-ver']['stdout_lines'])
+    if 'Gather run.jar paths' in host_vars:
+        jboss_release_paths.extend(host_vars['jboss.run-jar-path']['stdout_lines'])
+    if 'Gather run.jar dates' in host_vars:
+        jboss_release_dates.extend(host_vars['jboss.run-jar-date']['stdout_lines'])
+    if 'Gather run.jar versionss' in host_vars:
+        jboss_release_versions.extend(host_vars['jboss.run-jar-ver']['stdout_lines'])
     if 'jboss.running-versions' in host_vars:
         val[running_ver] = host_vars[running_ver]['stdout']
 
     jboss_releases = []
     deploy_dates = []
-    for line in lines:
-        if line:
-            line_format = line.split('**')
-            version = line_format[0]
-            deploy_date = line_format[-1]
-            deploy_dates.append(deploy_date)
-            if version in EAP_CLASSIFICATIONS:
-                jboss_releases.append(EAP_CLASSIFICATIONS[version])
-            elif version.strip():
-                jboss_releases.append('Unknown-Release: ' + version)
+    for version in jboss_release_versions:
+        if version in EAP_CLASSIFICATIONS:
+            jboss_releases.append(EAP_CLASSIFICATIONS[version])
+        elif version.strip():
+            jboss_releases.append('Unknown-Release: ' + version)
 
+    if jboss_release_paths:
+        val['jboss.deploy-paths'] = '; '.join(jboss_release_paths)
     if jboss_releases:
         val['jboss.installed-versions'] = '; '.join(jboss_releases)
-        val['jboss.deploy-dates'] = '; '.join(deploy_dates)
+    if jboss_release_dates:
+        val['jboss.deploy-dates'] = '; '.join(jboss_release_dates)
 
     # The jboss role will not run if 'have_java' is false.
     if not host_vars['have_java']:

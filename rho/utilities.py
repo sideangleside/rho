@@ -114,6 +114,7 @@ SUBMAN_FACTS_TUPLE = ('subman.cpu.core(s)_per_socket',
                       'subman.has_facts_file')
 
 JBOSS_FACTS_TUPLE = ('jboss.installed-versions',
+                     'jboss.deploy-paths',
                      'jboss.deploy-dates',
                      'jboss.running-versions')
 
